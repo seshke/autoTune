@@ -27,8 +27,8 @@ tf0 = idx/fs;
 %sound(audioIn,fs)
 % for i=1:length(f0)
 % end
-xt=cos(2*pi*f0(100)*t);
-soundsc(xt,fs);
+%xt=cos(2*pi*f0(100)*t);
+%soundsc(xt,fs);
 
 figure(1)
 tiledlayout(2,1)
@@ -57,11 +57,13 @@ f0(hr < threshold) = 0;
 %Back to time domain
 time_f0 = ifft(f0);
 real_f0 = real(time_f0); 
-disp(f0)
+%disp(f0);
 %sound(audioIn,fs)
 %sound(abs(time_f0),fs)
 
-soundsc(f0,fs)
+%soundsc(f0,fs)
+
+playOut(f0)
 
 
 %% Plotting
@@ -73,11 +75,24 @@ ylabel('Pitch (Hz)')
 title('Pitch Estimations')
 grid on
 
-Fs = 44100;        % Samples per second. 48000 is also a good choice
-toneFreq = 22000;  % Tone frequency, in Hertz. must be less than .5 * Fs.
-nSeconds = 10;      % Duration of the sound
-a = sin(linspace(0, nSeconds*toneFreq*2*pi, round(nSeconds*Fs)));
-sound(a,Fs); % Play sound at sampling rate Fs
+
+% Playing out notes
+
+
+for i = length(pitch_array)
+
+    Fs = 44100;        % Samples per second. 48000 is also a good choice
+    %curVal = pitch_array(i); 
+    %if curVal == 0
+    %    sound(a,Fs);
+    toneFreq = pitch_array(i);  % Tone frequency, in Hertz. must be less than .5 * Fs.
+    disp(toneFreq)
+    nSeconds = 0.2;      % Duration of the sound
+    a = sin(linspace(0, nSeconds*toneFreq*2*pi, round(nSeconds*Fs)));
+    play= a;
+    soundsc(a,Fs); % Play sound at sampling rate Fs
+end
+end
 
 %% Frequency Finder function
 %% Matches recorded pitch to the closest known note
