@@ -19,10 +19,11 @@ t = (0:size(audioIn,1)-1)/fs;
 
 winLength = round(0.05*fs);
 overlapLength = round(0.045*fs);
+%display(audioIn)
 [f0,idx] = pitch(audioIn,fs,'Method','SRH','WindowLength',winLength,'OverlapLength',overlapLength);
 tf0 = idx/fs;
 
-sound(audioIn,fs)
+%sound(audioIn,fs)
 
 figure(1)
 tiledlayout(2,1)
@@ -46,7 +47,13 @@ axis tight
 hr = harmonicRatio(audioIn,fs,"Window",hamming(winLength,'periodic'),"OverlapLength",overlapLength);
 
 threshold = 0.9;
-f0(hr < threshold) = nan;
+f0(hr < threshold) = 0;
+
+%Back to time domain
+time_f0 = ifft(f0);
+disp(f0)
+%sound(audioIn,fs)
+sound(time_f0,fs)
 
 figure(2)
 plot(tf0,f0)
