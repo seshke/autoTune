@@ -77,7 +77,7 @@ title('Pitch Estimations');
 grid on;
 
 t=[-0.1:deltat:5];
-[noteNam,fixedFrequencies]=makeRect(tf0,1,f0,NoteName);
+[noteNam,fixedFrequencies]=makeRect(tf0,1,f0,NoteNames);
 fixed=fixedFrequencies(1:224911);
 %disp(noteNam);
 
