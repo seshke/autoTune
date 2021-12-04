@@ -6,7 +6,7 @@ recObj = audiorecorder(44100,8,1);
 
 disp('Start speaking.')
 recordblocking(recObj, 3);
-disp('End of Recording.');
+disp('That was terrible.');
 %play(recObj);
 
 y = getaudiodata(recObj);
@@ -21,7 +21,8 @@ winLength = round(0.05*fs);
 overlapLength = round(0.045*fs);
 %overlapLength = 132300;
 %display(audioIn)
-[f0,idx] = pitch(audioIn,fs,'Method','SRH','WindowLength',winLength,'OverlapLength',overlapLength);
+[f0,idx] = pitch(audioIn,fs,'Method','PEF','Range',[15,800],'WindowLength',winLength,'OverlapLength',overlapLength);
+%[f0,idx] = pitch(audioIn,fs,'Method','SRH','WindowLength',winLength,'OverlapLength',overlapLength);
 tf0 = idx/fs;
 
 %sound(audioIn,fs)
@@ -69,12 +70,25 @@ real_f0 = real(time_f0);
 %% Plotting
 
 figure(2)
-plot(tf0,f0)
-xlabel('Time (s)')
-ylabel('Pitch (Hz)')
-title('Pitch Estimations')
-grid on
+plot(tf0,f0);
+xlabel('Time (s)');
+ylabel('Pitch (Hz)');
+title('Pitch Estimations');
+grid on;
 
+t=[-0.1:deltat:5];
+[noteNam,fixedFrequencies]=makeRect(tf0,1,f0,NoteName);
+fixed=fixedFrequencies(1:224911);
+%disp(noteNam);
+
+figure(3);
+plot(t,fixed);
+xlabel('Time (s)');
+title('Corrected Pitch Guesses');
+grid on;
+soundsc(fixedFrequencies,44100);
+
+disp(noteNam.');
 
 % Playing out notes
 
@@ -94,26 +108,47 @@ grid on
 % end
 
 % Playing out notes function
-function [sound,newRect] = makeRect(progressIndex, arr)
-    f0=0;
-    t=[1:1:length(pitches)+1];
-    newRect=arr;
-    sound=zeros(1,length(arr));
+function [sounds,newRect] = makeRect(t,progressIndex, arr, notes)
+    newRect=zeros(1,300000);
+    sounds=strings(1,592);
+    FS = 44100;
+    deltat = 1/FS;
+    t=[-0.1:deltat:7];
+    %disp(length(t));
+    j=1;
+    
     for k=progressIndex:length(arr)
-        if (arr(k)>0)
-            f0=freqFinder(arr(k));
-            newRect(k)=cos(2*pi*f0*t);
-            sound(k) = NoteName(find(note));
+        if (arr(k)>0) %if a pitch is detected
+            for h=1:381
+                [f,fi]=freqFinder(arr(k));
+                %disp(f);
+                %disp(length(newRect));
+                %disp(length(t));
+                %disp(j);
+                newRect(j)=cos(2*pi()*f*t(j));
+                %sounds(j) = notes(fi);
+                %disp(fi);
+                %disp(notes(fi));
+                j=j+1;
+            end
+            sounds(k)=notes(fi);
         else
-            newRect(k)=0;
-            sound(k) = "silent";
+            for h=1:381 %if no pitch detected (silence)
+                newRect(j)=0;
+                %sounds(j) = "silent";
+                j=j+1;
+            end
+            sounds(k) = "silent (N/A)";
         end
+        %disp(j);
     end
+    %disp(j);
+    
 end
 
 %% Frequency Finder function
 %% Matches recorded pitch to the closest known note
-function bat = freqFinder(freq)
+function [bat,batIndex] = freqFinder(freq)
 
 knownFreq = [16.35
     17.32
@@ -223,31 +258,36 @@ knownFreq = [16.35
     7040
     7458.62
     7902.13];
+placeholder=knownFreq;
 freqLength = length(knownFreq);
 sample=freq; %sets to sample frequency
 i=cast(freqLength/2 + 0.5, 'uint32');
 while(freqLength>1)
     freqLength=length(knownFreq);
-    disp("length");
-    disp(freqLength);
-    disp("index");
-    disp(i);
+    %disp("length");
+    %disp(freqLength);
+    %disp("index");
+    %disp(i);
     if (abs(knownFreq(i+1)-sample)<abs(knownFreq(i)-sample)) %move up
-        
-        disp("up");
+        %disp("up");
         knownFreq=knownFreq(i+1:end);
         freqLength=length(knownFreq);
         i=cast((freqLength/2), 'uint32');
     else %move down
-        
-        disp("down");
+        %disp("down");
         knownFreq=knownFreq(1:i);
         freqLength=length(knownFreq);
         i=cast((freqLength/2), 'uint32');
     end
     bat=knownFreq(1);
-    disp("bat");
-    disp(bat);
+    %disp("bat");
+    %disp(bat);
+    if (bat~=0)
+        batIndex=find(placeholder==bat);
+    else
+        batIndex=0; %index of zero means silence; no note sung
+    end
+    %disp(batIndex); 
 end
 
 end
