@@ -19,17 +19,8 @@ t = (0:size(audioIn,1)-1)/fs;
 
 winLength = round(0.05*fs);
 overlapLength = round(0.045*fs);
-%overlapLength = 132300;
-%display(audioIn)
 [f0,idx] = pitch(audioIn,fs,'Method','PEF','Range',[15,800],'WindowLength',winLength,'OverlapLength',overlapLength);
-%[f0,idx] = pitch(audioIn,fs,'Method','SRH','WindowLength',winLength,'OverlapLength',overlapLength);
 tf0 = idx/fs;
-
-%sound(audioIn,fs)
-% for i=1:length(f0)
-% end
-%xt=cos(2*pi*f0(100)*t);
-%soundsc(xt,fs);
 
 figure(1)
 tiledlayout(2,1)
@@ -48,7 +39,6 @@ title('Pitch Estimations')
 axis tight
 
 %Use the harmonic ratio as the threshold for valid pitch decisions. 
-% If the harmonic ratio is less than the threshold, set the pitch decision to NaN. 
 % Plot the results.
 hr = harmonicRatio(audioIn,fs,"Window",hamming(winLength,'periodic'),"OverlapLength",overlapLength);
 
@@ -58,13 +48,6 @@ f0(hr < threshold) = 0;
 %Back to time domain
 time_f0 = ifft(f0);
 real_f0 = real(time_f0); 
-%disp(f0);
-%sound(audioIn,fs)
-%sound(abs(time_f0),fs)
-
-%soundsc(f0,fs)
-
-%playOut(f0)
 
 
 %% Plotting
@@ -103,22 +86,8 @@ for n=1:length(clean)
     disp("");
 end
 
-% Playing out notes
 
-% pitch_array = f0; 
-% for i = 1:length(pitch_array)
-%     %disp(i)
-%     Fs = 44100;        % Samples per second. 48000 is also a good choice
-%     %curVal = pitch_array(i); 
-%     %if curVal == 0
-%     %    sound(a,Fs);
-%     toneFreq = pitch_array(i);  % Tone frequency, in Hertz. must be less than .5 * Fs.
-%     disp(toneFreq)
-%     %disp(toneFreq)
-%     nSeconds = 0.1;      % Duration of the sound
-%     a = sin(linspace(0, nSeconds*toneFreq*2*pi, round(nSeconds*Fs)));
-%     %soundsc(a,Fs); % Play sound at sampling rate Fs
-% end
+
 
 % Playing out notes function
 function [sounds,newRect] = makeRect(t,progressIndex, arr, notes)
@@ -309,6 +278,7 @@ nanana=["C0";" C#0/Db0 ";"D0";" D#0/Eb0 ";"E0";"F0";" F#0/Gb0 ";"G0";" G#0/Ab0 "
 
 end
 
+% Removing Repeat Strings 
 function [clean,lengths] = stringCleaning(strs)
 cleaned=strings(1,length(strs));
 noteLengths=zeros(1,length(strs));
